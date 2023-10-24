@@ -1,0 +1,87 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              Int              @id @default(autoincrement())
+  email           String           @unique
+  name            String?
+  password        String
+  role            Role             @default(USER)
+  isEmailVerified Boolean          @default(false)
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  Token           Token[]
+  JobApplication  JobApplication[]
+}
+
+model Token {
+  id          Int       @id @default(autoincrement())
+  token       String
+  type        TokenType
+  expires     DateTime
+  blacklisted Boolean
+  createdAt   DateTime  @default(now())
+  user        User      @relation(fields: [userId], references: [id])
+  userId      Int
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum TokenType {
+  ACCESS
+  REFRESH
+  RESET_PASSWORD
+  VERIFY_EMAIL
+}
+
+model Job {
+  id              Int     @id @default(autoincrement())
+  jobTitle        String
+  salaryEstimate  String
+  jobDescription  String
+  rating          Float?
+  companyName     String
+  location        String
+  headquarters    String
+  size            String
+  typeOfOwnership String
+  industry        String
+  sector          String
+  revenue         String
+  minSalary       Int
+  maxSalary       Int
+  avgSalary       Int
+  jobState        String
+  sameState       Boolean
+  companyAge      Int
+  jobSimp         String
+  seniority       String
+
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  JobApplication JobApplication[]
+}
+
+model JobApplication {
+  id           Int      @id @default(autoincrement())
+  user         User     @relation(fields: [userId], references: [id])
+  userId       Int
+  job          Job      @relation(fields: [jobId], references: [id])
+  jobId        Int
+  personalNote String?
+  appliedAt    DateTime @default(now())
+
+  @@unique([userId, jobId])
+}
